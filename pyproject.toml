@@ -1,0 +1,45 @@
+[build-system]
+requires = [
+    "hatchling>=1.3.1",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "pysrim"
+description = "Automation of SRIM using Python"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Christopher Ostrouchov", email = "chris.ostrouchov+pysrim@gmail.com" },
+]
+maintainers = [
+    { name = "Angus Hollands", email = "goosey15@gmail.com" },
+]
+keywords = [
+    "automation",
+    "material",
+    "plotting",
+    "srim",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "oldest-supported-numpy",
+    "pyyaml",
+]
+dynamic = [
+    "version",
+]
+
+[project.urls]
+Homepage = "https://github.com/agoose77/pysrim"
+
+[tool.hatch.version]
+path = "srim/_version.py"

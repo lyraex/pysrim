@@ -1,0 +1,27 @@
+name: Wheel
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install build
+      - name: Build wheel
+        run: python3 -m build -w
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./dist/*.whl
