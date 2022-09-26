@@ -43,3 +43,8 @@ Homepage = "https://github.com/agoose77/pysrim"
 
 [tool.hatch.version]
 path = "srim/_version.py"
+
+[tool.hatch.build]
+include = [
+    "srim/data/elements.yaml"
+]
