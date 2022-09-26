@@ -3,8 +3,7 @@ name: Wheel
 on: [push]
 
 jobs:
-  build:
-
+  wheel:
     runs-on: ubuntu-latest
     strategy:
       matrix:
