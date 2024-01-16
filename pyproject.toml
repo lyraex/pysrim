@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pysrim"
-description = "Automation of SRIM using Python"
+description = "Automation, analysis, and plotting of SRIM calculation using Python"
 readme = "README.md"
 license = "MIT"
 authors = [
@@ -16,19 +16,30 @@ maintainers = [
     { name = "Angus Hollands", email = "goosey15@gmail.com" },
 ]
 keywords = [
+    "SRIM",
+    "ion-implantation",
+    "materials science",
+    "Monte Carlo",
     "automation",
-    "material",
     "plotting",
-    "srim",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.7",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
     "numpy",
@@ -39,7 +50,9 @@ dynamic = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agoose77/pysrim"
+Homepage = "https://github.com/rmlmcfadden/pysrim"
+Repository = "https://github.com/rmlmcfadden/pysrim.git"
+Issues = "https://github.com/rmlmcfadden/pysrim/issues"
 
 [tool.hatch.version]
 path = "srim/_version.py"
