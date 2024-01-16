@@ -150,7 +150,7 @@ class TRIMInput(object):
     def _write_bragg_correction(self):
         return (
             'Target Compound Corrections (Bragg)'
-        ) + self.newline + ' 1' * len(self._trim.target.layers) + self.newline
+        ) + self.newline + ' ' + ' '.join([str(layer.bragg_correction) for layer in self._trim.target.layers]) + self.newline
 
     def _write_displacement_energies(self):
         ed_str = (

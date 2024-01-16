@@ -20,6 +20,8 @@ class Layer(Material):
        phase of material (solid = 0, gas = 1). Default solid (0).
     name : :obj:`str:, optional
        name of the Layer (defaults to chemical_formula)
+    bragg_correction : :obj:`float`, optional
+        Bragg correction to the Layer's stopping power. Default is 1.0 (i.e., no correction).
 
     Examples
     --------
@@ -39,15 +41,16 @@ class Layer(Material):
            'surface': 3.0
     }, density=3.21, width=10000.0)
     """
-    def __init__(self, elements, density, width, phase=0, name=None):
-        """Creation of Layer from elements, density, width, phase, and
-name"""
+    def __init__(self, elements, density, width, phase=0, name=None, bragg_correction=1.0):
+        """Creation of Layer from elements, density, width, phase, name, and bragg_correction
+        """
         self.width = width
         self.name = name
+        self.bragg_correction = bragg_correction
         super(Layer, self).__init__(elements, density, phase)
 
     @classmethod
-    def from_formula(cls, chemical_formula, density, width, phase=0, name=None):
+    def from_formula(cls, chemical_formula, density, width, phase=0, name=None, bragg_correction=1.0):
         """ Creation Layer from chemical formula string, density, width, phase, and name
 
         Parameters
@@ -63,6 +66,8 @@ name"""
             phase of material (solid = 0, gas = 1). Default solid (0).
         name : :obj:`str:, optional
             name of the Layer (defaults to chemical_formula)
+        bragg_correction : :obj:`float`, optional
+            Bragg correction to the Layer's stopping power. Default is 1.0 (i.e., no correction).
 
         Notes
         -----
@@ -70,7 +75,7 @@ name"""
             easy way to set the displacement energy.
         """
         elements = cls._formula_to_elements(chemical_formula)
-        return Layer(elements, density, width, phase, name)
+        return Layer(elements, density, width, phase, name, bragg_correction)
 
     @property
     def width(self):
@@ -93,4 +98,4 @@ name"""
         self._name = str(value)
 
     def __repr__(self):
-        return "<Layer material:{} width:{}>".format(self.chemical_formula, self.width)
+        return "<Layer | material: {}, width:{}, bragg_correction: {}>".format(self.chemical_formula, self.width, self.bragg_correction)
