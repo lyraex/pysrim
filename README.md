@@ -2,22 +2,22 @@
 
 # pysrim: Automation, Analysis, and Plotting of SRIM Calculations
 
-`pysrim` is a python package that aims to wrap and extend SRIM a
-popular tool for simulating ions traveling through a material. There
-are many pain points to SRIM and this package aims to address
-them. These include compatibility with all OS's, automation and crash
-recovery of SRIM calculations, parsing of all output files, and
+`pysrim` is a [Python] package that aims to wrap and extend [SRIM], a
+popular tool for simulating ions travelling through a material. There
+are many pain points to [SRIM] and this package aims to address
+them. These include compatibility with *all* popular operating systems, automation and crash
+recovery of [SRIM] calculations, parsing of all output files, and
 publication quality plots.
 
-There is now a docker image
+There is now a [Docker] image
 [costrouc/pysrim](https://hub.docker.com/r/costrouc/pysrim/tags/) for
-running pysrim and SRIM! **No setup necissary and does not require a
+running `pysrim` and [SRIM]! **No setup necessary and does not require a
 display so it is server ready**. If you would like to try it run the
-short command below (obviously requires docker). All output files will
+short command below (obviously requires [Docker]). All output files will
 be stored in `/tmp/output` for this example. [Benchmarks
 show](https://pysrim.readthedocs.io/en/latest/benchmarks.html) the
 docker container is around 50-60% faster. I believe this is due to
-using [xvfb](https://linux.die.net/man/1/xvfb)
+using [xvfb].
 
 ``` bash
 docker run -v $PWD/examples/docker:/opt/pysrim/ \
@@ -75,26 +75,28 @@ Link to [documentation on readthedocs](https://pysrim.readthedocs.io/en/latest/)
 
 ## Automate running SRIM and TRIM on all operating systems
 
-While TRIM is a great code it has many downsides regarding
+While `TRIM` is a great code, it has many downsides regarding
 automation. The `TRIM.IN` input file is tedious to write yourself and
-the gui that constructs the `TRIM.IN` will crash at unexpeced moments.
+the [GUI] that constructs the `TRIM.IN` will crash at unexpected moments.
 One of these crashes everyone has encountered is the fact that a float
-text field can never be empty. TRIM also has a tendancy to crash
-becuase it stores all cascades in memory. Meaning that for large runs
-with full cascades greater than 1,000 ions it will run out of
+text field can never be empty. `TRIM` also has a tendency to crash
+because it stores all cascades in memory. Meaning that for large runs
+with full cascades greater than ~1000 ions it will run out of
 memory. `pysrim` addresses all of these issues by providing a simple
-API wrapper for the input file (supporting all of the features),
-ability to run on all operating systems (using
-[wine](https://appdb.winehq.org/objectManager.php?sClass=version&iId=13202)
-for linux and OSX), and allowing batch runs of calculations see [this
-notebook
-example](https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/SiC.ipynb).
+[API] wrapper for the input file (supporting all of `TRIM`'s features),
+that can be run on *all* operating systems
+(e.g., [Windows], [macOS], [Linux], etc.)
+using [wine]
+(see the [SRIM WineHQ page]),
+allowing for batch calculations
+(see
+[this notebook example](https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/SiC.ipynb)).
 
-Below is a hello world example of using `pysrim` for running a TRIM
-calcualtion. Note that `/tmp/srim` is the path to the SRIM executable
+Below is a ["Hello, World!"] example of using `pysrim` for running a `TRIM`
+calculation. Note that `/tmp/srim` is the path to the [SRIM] executable
 directory (`SRIM.exe` should reside in this directory). `pysrim` will
 add all the necessary input files. If this ran successfully for you a
-SRIM window will popup and start the calculation.
+[SRIM] window will popup and start the calculation.
 
 ``` python
 from srim import Ion, Layer, Target, TRIM
@@ -127,7 +129,8 @@ results = trim.run(srim_executable_directory)
 # results is `srim.output.Results` and contains all output files parsed
 ```
 
-See [documentation](https://pysrim.readthedocs.io/en/latest/) for all available options.
+See the [documentation](https://pysrim.readthedocs.io/en/latest/)
+for all available options.
 
 ## Copy SRIM output files to directory
 
@@ -142,25 +145,25 @@ TRIM.copy_output_files('/tmp/srim', '/home/costrouc/scratch/srim')
 
 ## Post processes SRIM output as numpy arrays
 
-By far the hardest part about running TRIM calculations is analyzing
+By far the hardest part about running `TRIM` calculations is analyzing
 the output files. `pysrim` comes with parsers for
-[IONIZ.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Ioniz),
-[VACANCY.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Vacancy),
-[NOVAC.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.NoVacancy),
-[E2RECOIL.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.EnergyToRecoils),
-[PHONON.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Phonons),
-[RANGE.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Range),
+[`IONIZ.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Ioniz),
+[`VACANCY.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Vacancy),
+[`NOVAC.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.NoVacancy),
+[`E2RECOIL.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.EnergyToRecoils),
+[`PHONON.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Phonons),
+[`RANGE.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Range),
 and
-[COLLISON.txt](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Collision). The
-COLLISON.txt file can get quite large so the `Collision` parser uses a
-buffered reader that can handle any file size. Additinally a class
-[srim.output.Results](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Results)
+[`COLLISON.txt`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Collision). The
+`COLLISON.txt` file can get quite large so the `Collision` parser uses a
+buffered reader that can handle any file size. Additionally, a class
+[`srim.output.Results`](https://pysrim.readthedocs.io/en/latest/source/srim.html#srim.output.Results)
 will processes all output files in a directory and provide a
 dictionary of each parsed output file. `pysrim` comes with some
-helpful plotting utilities such a plotting the DPA vs depth. However,
+helpful plotting utilities such a plotting the atomic displacements per atom (DPAs) vs. depth. However,
 `pysrim's` most powerful feature is that all of the text files are
-exposed as numpy arrays. The example below shows how to plot DPA using
-a simple math and numpy. This enables the user to seamlessly use TRIM
+exposed as [NumPy] arrays. The example below shows how to plot DPAs using
+a simple math and [NumPy]. This enables the user to seamlessly use `TRIM`
 and do analysis.
 
 ``` python
@@ -180,9 +183,9 @@ def plot_ionization(folder, ax):
     ax.plot(ioniz.depth, ioniz.recoils, label='Ionization from Recoils')
 ```
 
-Set `folders` to list of directories to SRIM outputs. See
+Set `folders` to list of directories to [SRIM] outputs. See
 [Analysis](https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/Analysis.ipynb)
-for detailed example. Notice how there is a python class for each SRIM
+for detailed example. Notice how there is a [Python] class for each [SRIM]
 output file and gives simple access to each column. This did require
 some complex regex to get working just right.
 
@@ -206,10 +209,10 @@ fig.savefig(os.path.join(image_directory, 'ionizationvsdepth.png'), transparent=
 ![srim heatmap](https://gitlab.com/costrouc/pysrim/raw/master/examples/images/ionizationvsdepth.png)
 
 See [jupyter
-notebook](<https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/Analysis.ipynb)
+notebook](https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/Analysis.ipynb)
 for full demonstration of features.
 
-An example of creating some publication graphics with pysrim can also
+An example of creating some publication graphics with `pysrim` can also
 be found in that
 [directory](https://gitlab.com/costrouc/pysrim/blob/master/examples/notebooks/SiC.ipynb). I
 have used this in a
@@ -218,44 +221,48 @@ have used this in a
 
 # Installation
 
-Installation of `pysrim` is easy via pip or conda.
+Installation of `pysrim` is easy via [pip] or [Conda].
 
-Available on PyPi
+Available on [PyPI]
 
  -  `pip install pysrim`
 
-Available on Conda
+Available on [Conda]
 
  - `conda install -c costrouc pysrim`
 
-Available on Docker
+Available on [Docker]
 
  - `docker pull costrouc/pysrim`
 
-Unless you are using the docker image, you will need to install SRIM
-on your machine using the instructions bellow for linux, OSX, and
-windows.
+Unless you are using the [Docker] image, you will need to install [SRIM]
+on your machine using the instructions bellow for [Linux], [macOS], and
+[Windows].
 
 ## Docker
 
-There is a docker container with `pysrim` and SRIM already
-installed. Some interesting tricks had to be done with using wine and
-faking an X11 session. `xvfb-run -a ` creates a fake X11 session
-within the docker container therefore allowing SRIM to run on servers
-without displays. This is the method that I always use to run SRIM.
+There is a [Docker] container with `pysrim` and SRIM already
+installed. Some interesting tricks had to be done with using [wine] and
+faking an [X11] session. `xvfb-run -a ` creates a fake [X11] session
+within the docker container therefore allowing [SRIM] to run on servers
+without displays. This is the method that I always use to run [SRIM].
 
 Image: [costrouc/pysrim](https://hub.docker.com/r/costrouc/pysrim/tags/)
 
 ## Linux and OSX
 
-For linux an OSX you will need to first have wine installed. See [this
+For [Linux] an [macOS] you will need to first have wine installed. See [this
 post](https://www.davidbaumgold.com/tutorials/wine-mac/) on
-installation of wine on OSX. For linux you will typically be able to
-install wine via `apt get install wine` or `yum install wine`. SRIM is
-[compatible](https://appdb.winehq.org/objectManager.php?sClass=version&iId=13202)
-with wine.
+installation of [wine] on [macOS]. For [Linux] you will typically be able to
+install [wine] via something like:
+```bash
+apt get install wine # Ubuntu
+dnf install wine
+```
+Further details specific to running [SRIM] via [wine] can be found on the
+[SRIM WineHQ page].
 
-Once you have wine installed run the [installer
+Once you have [wine] installed run the [installer
 script](https://gitlab.com/costrouc/pysrim/raw/master/install.sh)
 `install.sh`.
 
@@ -263,17 +270,17 @@ Click extract and then done.
 
 ## Windows
 
-A collegue of mine has gotten it to work easily on Windows but I
+A collegue of mine has gotten it to work easily on [Windows], but I
 myself have no experience. Just download the executable at
-[srim.org](http://srim.org/). Next you will extract the SRIM files
-into a directory on your windows machine. Note the directory of
+[srim.org](http://srim.org/). Next you will extract the [SRIM] files
+into a directory on your [Windows] machine. Note the directory of
 installation as it will be needed from `trim.run()`.
 
 # Contributing
 
 All contributions, bug reports, bug fixes, documentation improvements,
 enhancements and ideas are welcome! These should be submitted at the
-[Github repository](https://github.com/costrouc/pysrim). Github is
+[Github repository](https://github.com/costrouc/pysrim). GitHub is
 only used for visibility.
 
 Contributors:
@@ -285,3 +292,21 @@ Contributors:
 # License
 
 MIT
+
+[API]: https://en.wikipedia.org/wiki/API
+[Conda]: https://en.wikipedia.org/wiki/Conda_(package_manager)
+[Docker]: https://en.wikipedia.org/wiki/Docker_(software)
+[GUI]: https://en.wikipedia.org/wiki/Graphical_user_interface
+["Hello, World!"]: https://en.wikipedia.org/wiki/%22Hello,_World!%22_program
+[Linux]: https://en.wikipedia.org/wiki/Linux
+[macOS]: https://en.wikipedia.org/wiki/MacOS
+[NumPy]: https://en.wikipedia.org/wiki/NumPy
+[pip]: https://en.wikipedia.org/wiki/Pip_(package_manager)
+[PyPI]: https://en.wikipedia.org/wiki/Python_Package_Index
+[Python]: https://en.wikipedia.org/wiki/Python_(programming_language)
+[SRIM]: https://en.wikipedia.org/wiki/Stopping_and_Range_of_Ions_in_Matter
+[SRIM WineHQ page]: https://appdb.winehq.org/objectManager.php?sClass=application&iId=5992
+[X11]: https://en.wikipedia.org/wiki/X_Window_System
+[xvfb]: https://en.wikipedia.org/wiki/Xvfb
+[Windows]: https://en.wikipedia.org/wiki/Microsoft_Windows
+[wine]: https://en.wikipedia.org/wiki/Wine_(software)
