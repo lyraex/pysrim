@@ -140,7 +140,7 @@ class Material(object):
     @staticmethod
     def _formula_to_elements(chemical_formula):
         """ Convert chemical formula to elements """
-        single_element = '([A-Z][a-z]?)([0-9]*(?:\.[0-9]*)?)?'
+        single_element = r'([A-Z][a-z]?)([0-9]*(?:\.[0-9]*)?)?'
         elements = {}
 
         if re.match('^(?:{})+$'.format(single_element), chemical_formula):
