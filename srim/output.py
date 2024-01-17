@@ -50,7 +50,7 @@ class SRIM_Output(object):
         raise SRIMOutputParseError("unable to extract ion from file")
 
     def _read_target(self, output):
-        match_target = re.search('(?<=====\r\n)' r'Layer\s+\d+\s+:.*?(?=====)', output, re.DOTALL)
+        match_target = re.search(b'(?<=====\r\n)Layer\s+\d+\s+:.*?(?=====)', output, re.DOTALL)
         if match_target:
             print(match_target.group(0))
             layer_regex = (
@@ -79,7 +79,7 @@ class SRIM_Output(object):
         raise SRIMOutputParseError("unable to extract total target from file")
 
     def _read_num_ions(self, output):
-        match = re.search(r'Total Ions calculated\s+=(\d+.\d+)', output)
+        match = re.search(b'Total Ions calculated\s+=(\d+.\d+)', output)
         if match:
             # Cast string -> float -> round down to nearest int
             return int(float(match.group(1)))
@@ -87,8 +87,8 @@ class SRIM_Output(object):
 
     def _read_table(self, output):
         match = re.search((
-            r'=+(.*)'
-            r'-+(?:\s+-+)+'
+            b'=+(.*)'
+            b'-+(?:\s+-+)+'
         ), output, re.DOTALL)
         # Read Data from table
 
