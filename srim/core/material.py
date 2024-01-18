@@ -6,6 +6,7 @@ from .utils import (
     is_zero_or_one
 )
 from .element import Element
+from .binding import binding_energy
 
 class Material(object):
     """ Material Representation """
@@ -34,9 +35,11 @@ class Material(object):
 
         Structure of dictionary elements properties:
          - stoich  (required): Stoichiometry of element (fraction)
-         - E_d     (optional): Displacement energy [eV] default 25.0 eV
-         - lattice (optional): Lattice binding energies [eV] default 0.0 eV
-         - surface (optional): Surface binding energies [eV] default 3.0 eV
+         - E_d     (optional): Displacement energy [eV]
+         - lattice (optional): Lattice binding energies [eV]
+         - surface (optional): Surface binding energies [eV]
+
+        Note that, for the optional properties, SRIM's recommended values are automatically provided for each element; however, these can be overridden by explicitly providing an alternative value. 
 
         dictionary element properties can be:
 
@@ -59,9 +62,6 @@ class Material(object):
           - {Element('Cu'): {'stoich': 1.0, 'E_d': 25.0, 'lattice': 0.0, 'surface': 3.0}
 
         All stoichiometries will be normalized to 1.0
-
-        Eventually the materials will have better defaults that come
-        from databases.
         """
         self.phase = phase
         self.density = density
@@ -71,22 +71,35 @@ class Material(object):
         for element in elements:
             values = elements[element]
 
+            # determine the element symbol (for the binding_energy dictionary)
+            if isinstance(element, Element):
+                e = element.symbol
+            elif isinstance(element, (int, str)):
+                e = Element(element).symbol
+            else:
+                raise ValueError("Unknown element input type!")
+
             if isinstance(values, dict):
                 stoich = values['stoich']
-                e_disp = values.get('E_d', 25.0)
-                lattice = values.get('lattice', 0.0)
-                surface = values.get('surface', 3.0)
+                e_disp = values.get('E_d', binding_energy[e]["Displacement (eV)"])
+                lattice = values.get('lattice', binding_energy[e]["Lattice (eV)"])
+                surface = values.get('surface', binding_energy[e]["Surface (eV)"])
             elif isinstance(values, list):
-                default_values = [0.0, 25.0, 0.0, 3.0]
+                default_values = [
+                    1.0,
+                    binding_energy[e]["Displacement (eV)"],
+                    binding_energy[e]["Lattice (eV)"],
+                    binding_energy[e]["Surface (eV)"],
+                ]
                 if len(values) == 0 or len(values) > 4:
                     raise ValueError('list must be 0 < length < 5')
                 values = values + default_values[len(values):]
                 stoich, e_disp, lattice, surface = values
             elif isinstance(values, (int, float)):
                 stoich = values
-                e_disp = 25.0
-                lattice = 0.0
-                surface = 3.0
+                e_disp = binding_energy[e]["Displacement (eV)"]
+                lattice = binding_energy[e]["Surface (eV)"]
+                surface = binding_energy[e]["Lattice (eV)"]
             else:
                 raise ValueError('elements must be of type int, float, list, or dict')
 
