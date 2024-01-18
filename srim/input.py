@@ -129,7 +129,7 @@ class TRIMInput(object):
         for layer in self._trim.target.layers:
             for element in layer.elements:
                 layers_str_header_1 += '  {}({})'.format(element.symbol, element.atomic_number)
-                layers_str_header_2 += 'Stoich'
+                layers_str_header_2 += ' Stoich'
 
         element_index = 0
         for layer_index, layer in enumerate(self._trim.target.layers, start=1):
