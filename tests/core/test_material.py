@@ -2,41 +2,56 @@ import pytest
 
 from srim.core.element import Element
 from srim.core.material import Material
+from srim.core.binding import binding_energy
 
+# convenience lists for stoichiometry & binding energies
+e = "Au"
+default_values = [
+    1.0,
+    binding_energy[e]["Displacement (eV)"],
+    binding_energy[e]["Lattice (eV)"],
+    binding_energy[e]["Surface (eV)"],
+]
+custom_values = [1.0, 30.0, 1.0, 1.0]
 
 # Material Init
 @pytest.mark.parametrize("elements, check", [
-    ({Element('Au'): 1.0}, (1.0, 25.0, 0.0, 3.0)),
-    ({'Au': 1.0}, (1.0, 25.0, 0.0, 3.0)),
-    ({Element('Au'): [1.0]}, (1.0, 25.0, 0.0, 3.0)),
-    ({'Au': [1.0]}, (1.0, 25.0, 0.0, 3.0)),
-    ({'Au': [1.0, 30.0, 1.0, 1.0]}, (1.0, 30.0, 1.0, 1.0)),
-    ({Element('Au'): {'stoich': 1.0}}, (1.0, 25.0, 0.0, 3.0)),
-    ({'Au': {'stoich': 1.0}}, (1.0, 25.0, 0.0, 3.0)),
-    ({'Au': {'stoich': 1.0, 'E_d': 30.0, 'lattice': 1.0, 'surface': 1.0}}, (1.0, 30.0, 1.0, 1.0))
+    ({Element('Au'): 1.0}, default_values),
+    ({'Au': 1.0}, default_values),
+    ({Element('Au'): [1.0]}, default_values),
+    ({'Au': [1.0]}, default_values),
+    ({'Au': [1.0, 30.0, 1.0, 1.0]}, custom_values),
+    ({Element('Au'): {'stoich': 1.0}}, default_values),
+    ({'Au': {'stoich': 1.0}}, default_values),
+    ({'Au': {'stoich': 1.0, 'E_d': 30.0, 'lattice': 1.0, 'surface': 1.0}}, custom_values)
 ])
 def test_init_simple_prenormalized(elements, check):
     element = Element('Au')
     material = Material(elements, 1.0)
+    stoichiometry, E_displacement, E_lattice, E_surface = check
     
     assert len(material.elements) == 1
     assert element in material.elements
-    assert abs(material.elements[element]['stoich'] - check[0]) < 1e-6
-    assert abs(material.elements[element]['E_d'] - check[1]) < 1e-6
-    assert abs(material.elements[element]['lattice'] - check[2]) < 1e-6
-    assert abs(material.elements[element]['surface'] - check[3]) < 1e-6
+    assert abs(material.elements[element]['stoich'] - stoichiometry) < 1e-6
+    assert abs(material.elements[element]['E_d'] - E_displacement) < 1e-6
+    assert abs(material.elements[element]['lattice'] - E_lattice) < 1e-6
+    assert abs(material.elements[element]['surface'] - E_surface) < 1e-6
     assert material.density == 1.0
 
 def test_init_single_normalize():
     element = Element('Au')
     material = Material({element: 2.0}, 1.0)
 
+    E_displacement = binding_energy[element.symbol]["Displacement (eV)"]
+    E_lattice = binding_energy[element.symbol]["Lattice (eV)"]
+    E_surface = binding_energy[element.symbol]["Surface (eV)"]
+
     assert len(material.elements) == 1
     assert element in material.elements
     assert abs(material.elements[element]['stoich'] - 1.0) < 1e-6
-    assert abs(material.elements[element]['E_d'] - 25.0) < 1e-6
-    assert abs(material.elements[element]['lattice'] - 0.0) < 1e-6
-    assert abs(material.elements[element]['surface'] - 3.0) < 1e-6
+    assert abs(material.elements[element]['E_d'] - E_displacement) < 1e-6
+    assert abs(material.elements[element]['lattice'] - E_lattice) < 1e-6
+    assert abs(material.elements[element]['surface'] - E_surface) < 1e-6
     assert material.density == 1.0
 
 

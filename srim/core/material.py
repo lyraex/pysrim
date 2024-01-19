@@ -86,20 +86,20 @@ class Material(object):
                 surface = values.get('surface', binding_energy[e]["Surface (eV)"])
             elif isinstance(values, list):
                 default_values = [
-                    1.0,
                     binding_energy[e]["Displacement (eV)"],
                     binding_energy[e]["Lattice (eV)"],
                     binding_energy[e]["Surface (eV)"],
                 ]
                 if len(values) == 0 or len(values) > 4:
                     raise ValueError('list must be 0 < length < 5')
-                values = values + default_values[len(values):]
+                # add default values to the input list as needed
+                values += default_values[len(values) - 1:] if len(values) < 4 else [None] * 0
                 stoich, e_disp, lattice, surface = values
             elif isinstance(values, (int, float)):
                 stoich = values
                 e_disp = binding_energy[e]["Displacement (eV)"]
-                lattice = binding_energy[e]["Surface (eV)"]
-                surface = binding_energy[e]["Lattice (eV)"]
+                lattice = binding_energy[e]["Lattice (eV)"]
+                surface = binding_energy[e]["Surface (eV)"]
             else:
                 raise ValueError('elements must be of type int, float, list, or dict')
 
