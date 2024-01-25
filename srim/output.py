@@ -1,6 +1,4 @@
 """ Read output files of SRIM simulation
-
-TODO: Read header information
 """
 import os
 import re
@@ -71,7 +69,7 @@ class SRIM_Output(object):
                     # We know that elements will match
                     layers_elements.append(re.findall(element_regex, layer[5]))
 
-                raise NotImpementedError()
+                raise NotImplementedError()
 
                 import pytest
                 pytest.set_trace()
@@ -87,18 +85,31 @@ class SRIM_Output(object):
 
     def _read_table(self, output):
         match = re.search((
-            b'=+(.*)'
-            b'-+(?:\\s+-+)+'
+            b'>>>\s+(.*)\s+<<<+\s+=+\s+([\w\W\s]*)'
+            b'\r\n'
+            b'\-+(?:\s+-+)+'
         ), output, re.DOTALL)
         # Read Data from table
 
         if match:
-            # Headers TODO: name the columns in table
-            header = None
+            # Headers
+            cols = [s.strip().split() for s in match.group(2).decode("utf-8").split("\r\n") if s.strip() != '']
+            header = []
+            for col in cols:
+                for j, c in enumerate(col):
+                    c = c.strip()
+                    if len(header) == j:
+                        header.append(c)
+                    else:
+                        header[j] += ' '
+                        header[j] += c
+
+            # Units
+            units = match.group(1).strip().decode("utf-8")
 
             # Data
             data = np.genfromtxt(BytesIO(output[match.end():]), max_rows=100)
-            return data
+            return data, header, units
         raise SRIMOutputParseError("unable to extract table from file")
 
 
@@ -150,13 +161,33 @@ class Ioniz(SRIM_Output):
             output = f.read()
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._ions = data[:, 1]
         self._recoils = data[:, 2]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
@@ -204,13 +235,33 @@ class Vacancy(SRIM_Output):
             output = f.read()
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._ion_knock_ons = data[:, 1]
         self._vacancies = data[:, 2:]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
@@ -262,12 +313,32 @@ class NoVacancy(SRIM_Output):
 
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._number = data[:, 1]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
@@ -308,13 +379,33 @@ class EnergyToRecoils(SRIM_Output):
             output = f.read()
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._ions = data[:, 1]
         self._recoils = data[:, 2:]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
@@ -363,13 +454,33 @@ class Phonons(SRIM_Output):
             output = f.read()
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._ions = data[:, 1]
         self._recoils = data[:, 2]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
@@ -416,13 +527,33 @@ class Range(SRIM_Output):
             output = f.read()
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
-            data = self._read_table(output)
+            data, header, units = self._read_table(output)
 
         self._ion = ion
         self._num_ions = num_ions
         self._depth = data[:, 0]
         self._ions = data[:, 1]
         self._elements = data[:, 2:]
+        self._header = header
+        self._units = units
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
 
     @property
     def ion(self):
