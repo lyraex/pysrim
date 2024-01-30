@@ -93,7 +93,7 @@ class SRIM_Output(object):
 
         if match:
             # Headers
-            cols = [s.strip().split() for s in match.group(2).decode("utf-8").split("\r\n") if s.strip() != '']
+            cols = [re.split(r'\s{2,}', s.strip()) for s in match.group(2).decode("utf-8").split("\r\n") if s.strip() != '']
             header = []
             for col in cols:
                 for j, c in enumerate(col):
