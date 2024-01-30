@@ -32,6 +32,25 @@ class SRIMOutputParseError(Exception):
     """SRIM error reading output file"""
     pass
 
+class Element(object):
+    def __init__(self, element_id, name=None, atomic_percent=100, mass_percent=100) -> None:
+        self.element_id = element_id
+        self.name = name
+        self.atomic_percent = atomic_percent
+        self.mass_percent = mass_percent
+
+class Layer(object):
+    def __init__(self, layer_id, name=None, width=0, density_atoms=0, density_gr=0) -> None:
+        self.layer_id = layer_id
+        self.name = name
+        self.width = width
+        self.density_atoms = density_atoms
+        self.density_gr = density_gr
+        self.elements = []
+
+    def set_element(self, element_id, name=None, atomic_percent=100, mass_percent=100) -> None:
+        self.elements.append(Element(element_id, name, atomic_percent, mass_percent))
+
 
 class SRIM_Output(object):
     def _read_name(self, output):
@@ -48,32 +67,35 @@ class SRIM_Output(object):
         raise SRIMOutputParseError("unable to extract ion from file")
 
     def _read_target(self, output):
-        match_target = re.search(b'(?<=====\r\n)Layer\\s+\\d+\\s+:.*?(?=====)', output, re.DOTALL)
-        if match_target:
-            print(match_target.group(0))
-            layer_regex = (
-                r'Layer\s+(?P<i>\d+)\s+:\s+(.+)' '\r\n'
-                r'Layer Width\s+=\s+({0})\s+A\s+;' '\r\n'
-                r'\s+Layer #\s+(?P=i)- Density = ({0}) atoms/cm3 = ({0}) g/cm3' '\r\n'
-                r'((?:\s+Layer #\s+(?P=i)-\s+{1}\s+=\s+{0}\s+Atomic Percent = {0}\s+Mass Percent' '\r\n)+)'
-            ).format(double_regex, symbol_regex)
-            layers = re.findall(layer_regex.encode('utf-8'), match_target.group(0))
-            if layers:
-                element_regex = (
-                    r'\s+Layer #\s+(\d+)-\s+({1})\s+=\s+({0})\s+Atomic Percent = ({0})\s+Mass Percent' '\r\n'
-                ).format(double_regex, symbol_regex)
-                element_regex = element_regex.encode()
+        layer_regex = (
+            r'Layer\s+(?P<i>\d+)\s+:\s+(.+)\r\n'
+            r'Layer Width\s+=\s+({0})\s+A(?:[\w\s\W]+)\s+'
+            r'Layer #\s+(?P=i)- Density = ({0}) atoms\/cm3 = ({0}) g\/cm3\s+'
+            r'((?:\s+Layer #\s+(?P=i)-\s+{1}\s+=\s+{0}\s+Atomic Percent = {0}\s+Mass Percent)+)'
+        ).format(double_regex, symbol_regex).encode('utf-8')
+        element_regex = (
+            r'Layer #\s+(\d+)-\s+({1})\s+=\s+({0})\s+Atomic Percent = ({0})\s+Mass Percent'
+        ).format(double_regex, symbol_regex).encode('utf-8')
 
-                layers_elements = []
-                for layer in layers:
-                    # We know that elements will match
-                    layers_elements.append(re.findall(element_regex, layer[5]))
-
-                raise NotImplementedError()
-
-                import pytest
-                pytest.set_trace()
-
+        layers = re.findall(layer_regex, output, re.DOTALL)
+        if layers:
+            res_layers = []
+            for layer in layers:
+                res_layer = Layer(layer_id=layer[0].decode(), name=layer[1].decode().strip(), width=float(layer[2]), 
+                                    density_atoms=float(layer[3]), density_gr=float(layer[4]))
+                if layer[5] is not None:
+                    elements = re.findall(element_regex, layer[5].strip())
+                    if elements:
+                        for element in elements:
+                            res_layer.set_element(element_id=element[0].decode(), name=element[1].decode(), 
+                                                atomic_percent=float(element[2].decode()), mass_percent=float(element[3].decode()))
+                    else:
+                        raise SRIMOutputParseError("unable to extract element {} {} from layer {} {}".format(element.element_id, 
+                            element.name, res_layer.layer_id, res_layer.name))
+                else:
+                    raise SRIMOutputParseError("unable to extract elements regex from layer {} {}".format(res_layer.layer_id, res_layer.name))
+                res_layers.append(res_layer)
+            return res_layers
         raise SRIMOutputParseError("unable to extract total target from file")
 
     def _read_num_ions(self, output):
@@ -162,6 +184,7 @@ class Ioniz(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -170,6 +193,7 @@ class Ioniz(SRIM_Output):
         self._recoils = data[:, 2]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -188,6 +212,15 @@ class Ioniz(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
@@ -236,6 +269,7 @@ class Vacancy(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -244,6 +278,7 @@ class Vacancy(SRIM_Output):
         self._vacancies = data[:, 2:]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -262,6 +297,15 @@ class Vacancy(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
@@ -314,6 +358,7 @@ class NoVacancy(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -321,6 +366,7 @@ class NoVacancy(SRIM_Output):
         self._number = data[:, 1]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -339,6 +385,15 @@ class NoVacancy(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
@@ -380,6 +435,7 @@ class EnergyToRecoils(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -388,6 +444,7 @@ class EnergyToRecoils(SRIM_Output):
         self._recoils = data[:, 2:]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -406,6 +463,15 @@ class EnergyToRecoils(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
@@ -455,6 +521,7 @@ class Phonons(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -463,6 +530,7 @@ class Phonons(SRIM_Output):
         self._recoils = data[:, 2]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -481,6 +549,15 @@ class Phonons(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
@@ -528,6 +605,7 @@ class Range(SRIM_Output):
             ion = self._read_ion(output)
             num_ions = self._read_num_ions(output)
             data, header, units = self._read_table(output)
+            target = self._read_target(output)
 
         self._ion = ion
         self._num_ions = num_ions
@@ -536,6 +614,7 @@ class Range(SRIM_Output):
         self._elements = data[:, 2:]
         self._header = header
         self._units = units
+        self._target = target
 
     @property
     def header(self):
@@ -554,6 +633,15 @@ class Range(SRIM_Output):
             _type_: _description_
         """
         return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
 
     @property
     def ion(self):
