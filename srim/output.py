@@ -152,6 +152,8 @@ class Results(object):
       - ``E2RECOIL.txt`` handled by :class:`srim.output.EnergyToRecoils`
       - ``PHONON.txt`` handled by :class:`srim.output.Phonons`
       - ``RANGE.txt`` handled by :class:`srim.output.Range`
+    
+    Optionals:
       - ``RANGE-3D.txt`` handled by :class:`srim.output.Range3D`
     """
     def __init__(self, directory):
@@ -167,6 +169,8 @@ class Results(object):
         self.etorecoils = EnergyToRecoils(directory)
         self.phonons = Phonons(directory)
         self.range = Range(directory)
+
+    def get_range3d(self, directory):
         self.range3d = Range3D(directory)
 
 
