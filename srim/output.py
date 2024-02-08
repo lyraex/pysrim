@@ -152,6 +152,7 @@ class Results(object):
       - ``E2RECOIL.txt`` handled by :class:`srim.output.EnergyToRecoils`
       - ``PHONON.txt`` handled by :class:`srim.output.Phonons`
       - ``RANGE.txt`` handled by :class:`srim.output.Range`
+      - ``RANGE-3D.txt`` handled by :class:`srim.output.Range3D`
     """
     def __init__(self, directory):
         """ Retrives all the calculation files in a given directory"""
@@ -166,6 +167,7 @@ class Results(object):
         self.etorecoils = EnergyToRecoils(directory)
         self.phonons = Phonons(directory)
         self.range = Range(directory)
+        self.range3d = Range3D(directory)
 
 
 class Ioniz(SRIM_Output):
@@ -671,6 +673,87 @@ class Range(SRIM_Output):
         """Per elements [(Atoms/cm3)/(Atoms/cm2)] distribution of each element"""
         return self._elements
 
+
+class Range3D(SRIM_Output):
+    """``RANGE-3D.txt`` Table of the final distribution of the ions, tabulated in a 100x100 spatial array
+
+    Parameters
+    ----------
+    directory : :obj:`str`
+         directory of calculation
+    filename : :obj:`str`, optional
+         filename for Range. Default ``RANGE-3D.txt``
+    """
+    def __init__(self, directory, filename='RANGE-3D.txt'):
+        with open(os.path.join(directory, filename), 'rb') as f:
+            output = f.read()
+            ion = self._read_ion(output)
+            num_ions = self._read_num_ions(output)
+            data, header, units = self._read_table(output)
+            target = self._read_target(output)
+
+        self._ion = ion
+        self._num_ions = num_ions
+        self._depth = data[:, 0]
+        self._elements = data[:, 1:]
+        self._header = ["TARGET DEPTH (Ang)", "ION POSITIONS"]
+        self._units = units
+        self._target = target
+
+    @property
+    def header(self):
+        """Header of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._header
+    
+    @property
+    def units(self):
+        """Data units in table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._units
+    
+    @property
+    def target(self):
+        """Target of data table in SRIM Output file
+
+        Returns:
+            _type_: _description_
+        """
+        return self._target
+
+    @property
+    def ion(self):
+        """Ion used in SRIM calculation
+
+        **mass** could be wrong
+        """
+        return self._ion
+
+    @property
+    def num_ions(self):
+        """Number of Ions in SRIM simulation"""
+        return self._num_ions
+
+    @property
+    def depth(self):
+        """Depth [Ang] of bins in SRIM Calculation"""
+        return self._depth
+
+    @property
+    def ions(self):
+        """Ion final distribution [(Atoms/cm3)/(Atoms/cm2)]"""
+        return self._ions
+
+    @property
+    def elements(self):
+        """Per elements [(Atoms/cm3)/(Atoms/cm2)] distribution of each element"""
+        return self._elements
 
 
 class Backscat(object):
