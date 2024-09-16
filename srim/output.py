@@ -107,9 +107,9 @@ class SRIM_Output(object):
 
     def _read_table(self, output):
         match = re.search((
-            b'>>>\s+(.*)\s+<<<+\s+=+\s+([\w\W\s]*)'
-            b'\r\n'
-            b'\-+(?:\s+-+)+'
+            rb'>>>\s+(.*)\s+<<<+\s+=+\s+([\w\W\s]*)'
+            rb'\r\n'
+            rb'\-+(?:\s+-+)+'
         ), output, re.DOTALL)
         # Read Data from table
 
