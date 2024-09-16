@@ -898,6 +898,7 @@ class Collision:
 
         line = next(lines)
 
+        print(matches)
         return {
             'ion_number': int(ion_number),
             'displacements': float(matches[0]),
