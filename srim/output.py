@@ -933,7 +933,6 @@ class Collision:
                 break
             tokens = line.split()[1:-1]
 
-            print(tokens)
             cascade.append({
                 'recoil': int(tokens[0]),
                 'atom': int(tokens[1]),
